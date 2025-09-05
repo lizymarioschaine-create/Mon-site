@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vanie Cré'Art Catalogue</title>
+<style>
+:root{
+    --pink:#FFFFFF;
+    --soft:#FA003F;
+    --card:#FEE7F0;
+    --muted:#555;
+}
+*{box-sizing:border-box}
+body{font-family:Complex, Helvetica, sans-serif;margin:0;background:var(--pink);color:#222;padding-top:80px;transition: background 0.3s, color 0.3s}
+body.dark{
+    --pink:#1E1E1E;
+    --soft:#FA003F;
+    --card:#2C2C2C;
+    --muted:#ccc;
+    background:var(--pink);
+    color:#fff;
+}
+header{position:fixed;top:0;left:0;right:0;height:80px;background:var(--soft);display:flex;align-items:center;padding:10px 16px;z-index:1000}
+header img{height:80px;margin-right:12px;border-radius:6px;cursor:pointer;transition: transform 0.3s;}
+header img:hover{transform: scale(1.05);}
+header h1{margin:0;font-size:20px;color:#fff}
+.nav-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-actions input[type="search"]{padding:8px;border-radius:6px;border:0;min-width:160px}
+.nav-actions button{padding:8px 12px;border-radius:6px;border:0;background:#fff;color:#111;cursor:pointer;}
+#toggleTheme{background:#fff;padding:8px 10px; border-radius:6px; border:0; cursor:pointer;}
+main{max-width:1100px;margin:100px auto 40px;padding:0 16px}
+#bio {background-color: #FFFFFF;padding: 20px;margin: 20px;border-radius: 10px;text-align: center}
+body.dark #bio{background: #2C2C2C;color:#fff}
+.section{background:transparent;margin-bottom:24px}
+.section h2{color:#fff;margin:0 0 10px}
+.products-grid{display:flex;flex-wrap:wrap;gap:14px}
+.product{background:var(--card);width:200px;border-radius:10px;padding:12px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.08);position:relative}
+body.dark .product{background:#3A3A3A;color:#fff}
+.product img{width:100%;height:180px;object-fit:cover;border-radius:6px;cursor:pointer}
+.product h3{font-size:16px;margin:10px 0 6px}
+.product p{margin:0;color:var(--muted)}
+.product .actions{display:flex;gap:6px;justify-content:center;margin-top:10px}
+
+/* Boutons Modifier / Supprimer simples et stylés */
+.btn-edit{
+    background: #ffd966;
+    border-radius: 6px;
+    padding: 6px 12px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.btn-edit:hover{background:#ffea99;}
+.btn-delete{
+    background: #ff7b7b;
+    border-radius: 6px;
+    padding: 6px 12px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.btn-delete:hover{background:#ff9999;}
+
+/* Modal form */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:2000}
+.modal{background:#fff;padding:18px;border-radius:10px;max-width:420px;width:100%}
+.modal h3{margin-top:0}
+.modal label{display:block;margin:8px 0 4px;font-weight:600}
+.modal input[type="text"],.modal select{width:100%;padding:8px;border-radius:6px;border:1px solid #ddd}
+.modal .row{display:flex;gap:8px}
+.modal .row .col{flex:1}
+.modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+/* Responsive */
+@media (max-width:600px){.product{width:48%} header h1{font-size:16px}}
+@media (max-width:420px){.product{width:100%} .nav-actions input[type="search"]{min-width:100px}}
+.muted{color:var(--muted)}
+
+/* Modal Zoom */
+#imageModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;z-index:3000}
+#imageModal img{max-width:90%; max-height:90%; border-radius:10px;}
+
+/* Retour en haut amélioré */
+#btnTop{
+    position: fixed; bottom:30px; right:30px; z-index:1000;
+    background: var(--soft); color:#fff; border:none; width:50px; height:50px; border-radius:50%;
+    font-size:24px; cursor:pointer; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    display:flex; justify-content:center; align-items:center; transition: transform 0.3s;
+}
+#btnTop:hover{transform: scale(1.2); background:#ff004f;}
+</style>
+</head>
+<body>
+
+<header>
+    <img src="images/monlogo.jpg" alt="Logo Vanie Cré'Art" onclick="openZoom(this)">
+    <h1>Vanie Cré'Art Catalogue de Vêtements de Haute Couture</h1>
+    <div class="nav-actions">
+        <input type="search" id="search" placeholder="Rechercher..." aria-label="Rechercher des produits">
+        <button id="btnAdd">➕ Ajouter un produit</button>
+        <button id="toggleTheme" title="Changer thème">🌓</button>
+    </div>
+</header>
+
+<main>
+    <section id="bio">
+        <strong>"Chez Vanie Cré'Art, votre satisfaction est notre réussite".</strong>
+        <div class="muted">Adresse: Salazamy juste à 50 mètre en face à droit de Pandora Contact: +261 34 25 737 73</div>
+    </section>
+
+    <section class="section" data-category="robes">
+        <h2>Robes</h2>
+        <div class="products-grid" id="wrap-robes"></div>
+    </section>
+
+    <section class="section" data-category="chemises">
+        <h2>Chemises</h2>
+        <div class="products-grid" id="wrap-chemises"></div>
+    </section>
+
+    <section class="section" data-category="pantalons">
+        <h2>Pantalons</h2>
+        <div class="products-grid" id="wrap-pantalons"></div>
+    </section>
+</main>
+
+<div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h3 id="modalTitle">Ajouter un produit</h3>
+        <label for="fieldCategory">Catégorie</label>
+        <select id="fieldCategory">
+            <option value="robes">Robes</option>
+            <option value="chemises">Chemises</option>
+            <option value="pantalons">Pantalons</option>
+        </select>
+        <label for="fieldName">Nom du produit</label>
+        <input type="text" id="fieldName" placeholder="Ex: Robe élégante">
+        <div class="row">
+            <div class="col">
+                <label for="fieldPrice">Prix</label>
+                <input type="text" id="fieldPrice" placeholder="Ex: 30000">
+            </div>
+            <div class="col">
+                <label for="fieldImage">Image (chemin ou URL)</label>
+                <input type="text" id="fieldImage" placeholder="images/robe1.jpg">
+            </div>
+        </div>
+        <div class="actions">
+            <button id="modalCancel" class="btn">Annuler</button>
+            <button id="modalSave" class="btn">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<div id="imageModal" onclick="closeZoom()">
+    <img id="modalImg" src="">
+</div>
+
+<button id="btnTop" title="Retour en haut">⬆</button>
+
+<script>
+// Zoom
+function openZoom(imgElement){
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    modal.style.display = 'flex';
+    modalImg.src = imgElement.src;
+}
+function closeZoom(){document.getElementById('imageModal').style.display='none';}
+
+// Gestion produits
+const STORAGE_KEY = 'vc_products_v1';
+const defaultProducts = [
+    {id:'r1',category:'robes',name:'Mini robe rouge',price:'30000',image:'images/robe1.jpg'},
+    {id:'r2',category:'robes',name:'Robe bleue',price:'35000',image:'images/robe2.jpg'},
+    {id:'c1',category:'chemises',name:'Chemise bleue',price:'20000',image:'images/chemise1.jpg'},
+    {id:'p1',category:'pantalons',name:'Pantalon marron',price:'30000',image:'images/pantalon1.jpg'}
+];
+let products=[], editingId=null;
+
+const wrapRobes = document.getElementById('wrap-robes');
+const wrapChemises = document.getElementById('wrap-chemises');
+const wrapPantalons = document.getElementById('wrap-pantalons');
+const searchInput = document.getElementById('search');
+const btnAdd = document.getElementById('btnAdd');
+const modal = document.getElementById('modalBackdrop');
+const modalTitle = document.getElementById('modalTitle');
+const fieldCategory = document.getElementById('fieldCategory');
+const fieldName = document.getElementById('fieldName');
+const fieldPrice = document.getElementById('fieldPrice');
+const fieldImage = document.getElementById('fieldImage');
+const modalSave = document.getElementById('modalSave');
+const modalCancel = document.getElementById('modalCancel');
+
+function loadProducts(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){ products=defaultProducts.slice(); saveProducts(); }
+    else { try{products=JSON.parse(raw)}catch(e){products=defaultProducts.slice(); saveProducts();} }
+}
+function saveProducts(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(products)); }
+function genId(){ return 'id_'+Date.now()+'_'+Math.floor(Math.random()*1000); }
+
+function renderProducts(){
+    wrapRobes.innerHTML=''; wrapChemises.innerHTML=''; wrapPantalons.innerHTML='';
+    const q = searchInput.value.trim().toLowerCase();
+    products.forEach(p=>{
+        if(q && !p.name.toLowerCase().includes(q)) return;
+        const card = document.createElement('article');
+        card.className='product';
+        card.innerHTML=`
+            <img src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/400x300?text=Image+manquante'" onclick="openZoom(this)">
+            <h3>${p.name}</h3>
+            <p>Prix : ${p.price} Ar</p>
+            <div class="actions">
+                <button class="btn-edit" data-id="${p.id}">Modifier</button>
+                <button class="btn-delete" data-id="${p.id}">Supprimer</button>
+            </div>
+        `;
+        if(p.category==='robes') wrapRobes.appendChild(card);
+        else if(p.category==='chemises') wrapChemises.appendChild(card);
+        else if(p.category==='pantalons') wrapPantalons.appendChild(card);
+    });
+    document.querySelectorAll('.btn-edit').forEach(b=>b.addEventListener('click',()=>openEdit(b.dataset.id)));
+    document.querySelectorAll('.btn-delete').forEach(b=>b.addEventListener('click',()=>confirmDelete(b.dataset.id)));
+}
+
+function openAdd(){ editingId=null; modalTitle.textContent='Ajouter un produit'; fieldCategory.value='robes'; fieldName.value=''; fieldPrice.value=''; fieldImage.value=''; showModal(); }
+function openEdit(id){ const prod=products.find(x=>x.id===id); if(!prod)return alert('Produit introuvable'); editingId=id; modalTitle.textContent='Modifier le produit'; fieldCategory.value=prod.category; fieldName.value=prod.name; fieldPrice.value=prod.price; fieldImage.value=prod.image; showModal(); }
+function showModal(){ modal.style.display='flex'; fieldName.focus(); }
+function hideModal(){ modal.style.display='none'; editingId=null; }
+function saveFromModal(){ const name=fieldName.value.trim(); const price=fieldPrice.value.trim(); const image=fieldImage.value.trim()||'images/placeholder.jpg'; const category=fieldCategory.value;
+    if(!name||!price){ alert('Merci de renseigner au moins le nom et le prix.'); return; }
+    if(editingId){ const idx=products.findIndex(p=>p.id===editingId); if(idx===-1){ alert('Erreur: produit introuvable'); hideModal(); return; } products[idx]={id:editingId,category,name,price,image}; }
+    else { products.push({id:genId(),category,name,price,image}); }
+    saveProducts(); renderProducts(); hideModal();
+}
+function confirmDelete(id){ const prod=products.find(x=>x.id===id); if(!prod)return; const ok=confirm(`Supprimer "${prod.name}" ?`); if(!ok)return; products=products.filter(p=>p.id!==id); saveProducts(); renderProducts(); }
+
+btnAdd.addEventListener('click',openAdd);
+modalCancel.addEventListener('click',hideModal);
+modalSave.addEventListener('click',saveFromModal);
+searchInput.addEventListener('input',renderProducts);
+
+// Retour en haut
+const btnTop = document.getElementById('btnTop');
+window.onscroll = function(){ btnTop.style.display = (document.body.scrollTop>100 || document.documentElement.scrollTop>100) ? "flex" : "none"; };
+btnTop.addEventListener('click', ()=> { window.scrollTo({top:0, behavior:'smooth'}); });
+
+// Toggle thème
+const toggleTheme = document.getElementById('toggleTheme');
+toggleTheme.addEventListener('click', ()=>{ document.body.classList.toggle('dark'); });
+
+document.addEventListener('DOMContentLoaded',()=>{ loadProducts(); renderProducts(); });
+</script>
+</body>
+</html>
